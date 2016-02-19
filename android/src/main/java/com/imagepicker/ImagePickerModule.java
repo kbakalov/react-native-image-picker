@@ -236,7 +236,7 @@ public class ImagePickerModule extends ReactContextBaseJavaModule {
     BitmapFactory.Options imageOptions = new BitmapFactory.Options();
     imageOptions.inJustDecodeBounds = true;
     Bitmap photo = BitmapFactory.decodeFile(rotatedPath, imageOptions);
-    File resizedImage = getResizedImage(rotatedPath, imageOptions.outWidth, imageOptions.outHeight, 0);
+    File resizedImage = getResizedImage(rotatedPath, imageOptions.outWidth, imageOptions.outHeight);
     String resizedPath = resizedImage.getAbsolutePath();
 
     response.putString("data", getBase64StringFromFile(rotatedPath));
@@ -417,7 +417,7 @@ public class ImagePickerModule extends ReactContextBaseJavaModule {
             && ((initialHeight < maxHeight && maxHeight > 0) || maxHeight == 0)
             && quality == 100 && (!forceAngle || (forceAngle && CurrentAngle == angle))) {
     } else {
-        File resizedImage = getResizedImage(getRealPathFromURI(uri), initialWidth, initialHeight, 0);
+        File resizedImage = getResizedImage(getRealPathFromURI(uri), initialWidth, initialHeight);
         String resizedPath = resizedImage.getAbsolutePath();
 
         if (!noData) {
