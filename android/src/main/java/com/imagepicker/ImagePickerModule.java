@@ -214,6 +214,39 @@ public class ImagePickerModule extends ReactContextBaseJavaModule {
     }
   }
 
+  @ReactMethod
+  public void rotateImage(final ReadableMap options, final Callback callback) {
+    response = Arguments.createMap();
+
+    String imagePath = "";
+
+    if (options.hasKey("imagePath")) {
+      imagePath = options.getString("imagePath");
+    }
+
+    if (options.hasKey("angle")) {
+      angle = options.getInt("angle");
+    }
+
+    // Rotate Image
+    File rotatedImage = getRotatedImage(imagePath, angle);
+    String rotatedPath = rotatedImage.getAbsolutePath();
+
+    //resize image
+    BitmapFactory.Options imageOptions = new BitmapFactory.Options();
+    imageOptions.inJustDecodeBounds = true;
+    Bitmap photo = BitmapFactory.decodeFile(rotatedPath, imageOptions);
+    File resizedImage = getResizedImage(rotatedPath, imageOptions.outWidth, imageOptions.outHeight, 0);
+    String resizedPath = resizedImage.getAbsolutePath();
+
+    response.putString("data", getBase64StringFromFile(rotatedPath));
+    response.putString("dataResized", getBase64StringFromFile(resizedPath));
+
+    callback.invoke(response);
+
+    return;
+  }
+
   // NOTE: Currently not reentrant / doesn't support concurrent requests
   @ReactMethod
   public void launchImageLibrary(final ReadableMap options, final Callback callback) {
@@ -470,6 +503,48 @@ public class ImagePickerModule extends ReactContextBaseJavaModule {
     bytes = output.toByteArray();
     return Base64.encodeToString(bytes, Base64.NO_WRAP);
   }
+
+  /**
+     * Create a rotated image, copy of the original source image
+     *
+     * @param realPath
+     * @param initialWidth
+     * @param initialHeight
+     * @return resized file
+     */
+  private File getRotatedImage (final String realPath, final int angle ) {
+      Bitmap photo = BitmapFactory.decodeFile(realPath);
+      Bitmap rotatedPhoto = null;
+      Matrix matrix = new Matrix();
+      matrix.postRotate(angle);
+      matrix.postScale(1, 1);
+
+      rotatedPhoto = Bitmap.createBitmap(photo, 0, 0, photo.getWidth(), photo.getHeight(), matrix, true);
+      ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+      rotatedPhoto.compress(Bitmap.CompressFormat.JPEG, quality, bytes);
+
+      File f = createNewFile();
+      FileOutputStream fo;
+      try {
+          fo = new FileOutputStream(f);
+          try {
+              fo.write(bytes.toByteArray());
+          } catch (IOException e) {
+              e.printStackTrace();
+          }
+      } catch (FileNotFoundException e) {
+          e.printStackTrace();
+      }
+
+      // recycle to avoid java.lang.OutOfMemoryError
+      if (photo != null) {
+          rotatedPhoto.recycle();
+          photo.recycle();
+          rotatedPhoto = null;
+          photo = null;
+      }
+      return f;
+    }
 
   /**
    * Create a resized image to fill the maxWidth/maxHeight values,the
