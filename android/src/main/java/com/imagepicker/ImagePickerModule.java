@@ -241,6 +241,7 @@ public class ImagePickerModule extends ReactContextBaseJavaModule {
 
     response.putString("data", getBase64StringFromFile(rotatedPath));
     response.putString("dataResized", getBase64StringFromFile(resizedPath));
+    response.putString("path", resizedPath)
 
     callback.invoke(response);
 
@@ -419,6 +420,8 @@ public class ImagePickerModule extends ReactContextBaseJavaModule {
     } else {
         File resizedImage = getResizedImage(getRealPathFromURI(uri), initialWidth, initialHeight, 0);
         String resizedPath = resizedImage.getAbsolutePath();
+
+        response.putString("resizedPath", resizedPath);
 
         if (!noData) {
             response.putString("dataResized", getBase64StringFromFile(resizedPath));
