@@ -241,7 +241,7 @@ public class ImagePickerModule extends ReactContextBaseJavaModule {
 
     response.putString("data", getBase64StringFromFile(rotatedPath));
     response.putString("dataResized", getBase64StringFromFile(resizedPath));
-    response.putString("path", resizedPath)
+    response.putString("path", resizedPath);
 
     callback.invoke(response);
 
